@@ -1,7 +1,8 @@
 import { FC } from 'react';
 import ReactECharts from './Chart';
+import { ILoanChartProps } from '@/types';
 
-const LoanChart: FC<any>  = ({ yearsList }) => {
+const LoanChart: FC<ILoanChartProps>  = ({ yearsList }) => {
   const option = {
     title: {
       text: 'Выплата по ипотеке'
@@ -45,26 +46,9 @@ const LoanChart: FC<any>  = ({ yearsList }) => {
     ]
   };
 
-  // const countRemainingPrincipal = (
-  //   totalAmount: number,
-  //   months: number,
-  //   interest: number,
-  //   monthsIntendToPay: number,
-  // ) => {
-  //   const rate = interest / 100 / 12;
-
-  //   return round(
-  //     totalAmount *
-  //       ((Math.pow(1 + rate, months) - Math.pow(1 + rate, monthsIntendToPay)) / (Math.pow(1 + rate, months) - 1)),
-  //   );
-  // };
-
   return (
     <div className='h-full'>
-      <ReactECharts option={option} style={{
-        height: '100%',
-      }}
-    />
+      <ReactECharts option={option} />
     </div>
   );
 };

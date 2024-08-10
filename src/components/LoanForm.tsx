@@ -2,18 +2,15 @@ import { FC, useState } from 'react';
 import { Button } from '@/components/ui/button'
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ILoanFormProps } from '../types'
 
-const LoanForm: FC<any> = ({ setYearsList, setResult }) => {
+const LoanForm: FC<ILoanFormProps> = ({ getFormData }) => {
   const [data, setData] = useState({
     principal: 630000,
     annualInterestRate: 7.07,
     additionalPayment: 3150,
     years: 25,
   });
-
-  const round = (number: number, sign=2) => {
-    return parseFloat(number.toFixed(sign));
-  };
 
   const changeData = (event: React.ChangeEvent<HTMLInputElement>) => {
     const name = event.target.name;
@@ -27,62 +24,13 @@ const LoanForm: FC<any> = ({ setYearsList, setResult }) => {
     });
   };
 
-  const countMounthlyPayment = (totalAmount: number, months: number, interest: number): number => {
-    const rate = interest / 100 / 12;
-
-    const ratePowerOfMonth = round(Math.pow(1 + rate, months));
-
-    return round((totalAmount * rate * ratePowerOfMonth) / (ratePowerOfMonth - 1));
-  };
-
-  const calculate = (event?: React.FormEvent) => {
-    event?.preventDefault();
-
-    const principal = data.principal;
-    const annualInterestRate = data.annualInterestRate;
-    const additionalPayment = data.additionalPayment;
-    const months = data.years * 12;
-
-    let remainingPrincipal = principal;
-    let totalPaid = 0;
-    const monthlyPayment = countMounthlyPayment(principal, months, annualInterestRate); // Calculated initial monthly payment
-    
-    let result = '';
-    const yearsSet: Set<any> = new Set();
-    let now = new Date();
-
-    for (let month = 1; month <= months; month++) {
-      const monthlyInterest = remainingPrincipal * (annualInterestRate / 100 / 12);
-      const principalPayment = monthlyPayment - monthlyInterest;
-
-      remainingPrincipal -= principalPayment + additionalPayment;
-      totalPaid += monthlyPayment + additionalPayment;
-
-      now.setMonth(now.getMonth() + 1);
-      now.setDate(1);
-      now = new Date(now);
-
-      if (remainingPrincipal > 0) {
-        yearsSet.add({ name: now.toString(), value: [[now.getFullYear(), now.getMonth() + 1, 1].join('/'), round(remainingPrincipal)] });
-      }
-
-      if (remainingPrincipal <= 0) {  
-        result =
-          `При сумме кредита ${principal} под ${annualInterestRate}% годовых на ${months} месяцев обязательный ежемесячный платеж составит ${monthlyPayment}.
-          При дополнительном платеже на "тело" кредита ${additionalPayment}, кредит будет выплачен примерно за ${(month / 12).toFixed(1).split('.')[0]}
-          лет/года и ${(month / 12).toFixed(1).split('.')[1]} месяца(ев).
-          Общий ежемесячный платеж составит ${monthlyPayment + additionalPayment}. Всего будет выплачено ${totalPaid.toFixed(2)}
-          c переплатой ${round(round(totalPaid) - principal) }.`;
-        break;
-      }
-    }
-
-    setResult(result);
-    setYearsList(Array.from(yearsSet));
+  const handleGetFormData = (event: React.FormEvent) => {
+    event.preventDefault();
+    getFormData(data);
   };
 
   return (
-    <form onSubmit={calculate}>
+    <form onSubmit={handleGetFormData}>
       <div className='mb-4'>
         <Label htmlFor='principal'>Сумма кредита</Label>
         <Input id='principal' name='principal' type='number' onChange={changeData} value={data.principal} />
@@ -100,7 +48,7 @@ const LoanForm: FC<any> = ({ setYearsList, setResult }) => {
         <Input id='additionalPayment' name='additionalPayment' type='number' onChange={changeData} value={data.additionalPayment} />
       </div>
       <div className='flex justify-center'>
-        <Button type='submit' variant='default' onClick={calculate}>Расчитать</Button>
+        <Button type='submit' variant='default' onClick={handleGetFormData}>Расчитать</Button>
       </div>
     </form>
   );
